@@ -10,19 +10,45 @@
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                </div>
-            </div>
+<!-- Navigation Links -->
+<div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+        {{ __('Dashboard') }}
+    </x-nav-link>
+
+    <!-- Library Catalogue available to all authenticated users -->
+    <x-nav-link :href="route('books.index')" :active="request()->routeIs('books.*')">
+        {{ __('Library Catalogue') }}
+    </x-nav-link>
+
+    <!-- UI Level Auth: Member specific links -->
+    @if(auth()->user()->hasRole('member'))
+        <x-nav-link :href="route('borrows.index')" :active="request()->routeIs('borrows.index')">
+            {{ __('My Books') }}
+        </x-nav-link>
+    @endif
+
+    <!-- UI Level Auth: Staff specific links (Admin & Librarian) -->
+    @if(auth()->user()->hasAnyRole(['admin', 'librarian']))
+        <x-nav-link :href="route('admin.members')" :active="request()->routeIs('admin.members')">
+            {{ __('Members List') }}
+        </x-nav-link>
+    @endif
+
+    <!-- UI Level Auth: Admin specific links -->
+    @if(auth()->user()->hasRole('admin'))
+        <x-nav-link :href="route('admin.roles')" :active="request()->routeIs('admin.roles')">
+            {{ __('Roles Matrix') }}
+        </x-nav-link>
+    @endif
+</div>
+
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-dark dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">
