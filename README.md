@@ -3,6 +3,14 @@
 ## Project Abstract
 The Secure Online Library Management System is a robust, role-based web application built with Laravel and styled with Tailwind CSS. Developed for the "Web and Security Technologies" midterm exam, this system strictly adheres to the Model-View-Controller (MVC) architectural pattern. The core objective of the project is to provide a seamless borrowing engine while guaranteeing enterprise-grade protection against common web vulnerabilities. 
 
+## Technology Stack
+* **Framework:** Laravel 11.x
+* **Language:** PHP 8.2+
+* **Frontend:** Tailwind CSS & Blade Templates
+* **Authentication:** Laravel Breeze (Starter Kit)
+* **Database:** MySQL / MariaDB
+* **Asset Manager:** Vite
+
 ---
 
 ## Core Features
@@ -25,6 +33,37 @@ Security is the foundational pillar of this application. Below is a matrix of th
 * **Cross-Site Scripting (XSS) Prevention:** The entire presentation layer relies on Blade templating. All dynamic database outputs are wrapped in `{{ }}` directives for automatic `htmlspecialchars()` sanitization.
 * **Cross-Site Request Forgery (CSRF) Protection:** Strict `@csrf` token enforcement on all state-changing HTML forms (`POST`, `PUT`, `DELETE`).
 * **Input Validation:** Backend execution relies entirely on the injection of strict `FormRequest` classes (`StoreBookRequest`, `UpdateBookRequest`, etc.).
+
+---
+
+## Project Structure (MVC Highlights)
+* **Controllers:** `app/Http/Controllers/` contains logical handlers (e.g., `BookController.php`, `BorrowController.php`).
+* **Middleware:** `app/Http/Middleware/CheckRole.php` handles dynamic role verification.
+* **Requests:** `app/Http/Requests/` houses `FormRequest` classes for strictly validated data entry.
+* **Models:** `app/Models/` defines Eloquent relationships and `$fillable` protection.
+* **Views:** `resources/views/` contains Blade templates structured by resource (Admin, Books, Borrows).
+* **Migrations:** `database/migrations/` defines the database schema including foreign key constraints and defaulting logic.
+
+---
+
+## Database Schema
+The system architecture relies on three primary entities:
+* **Users:** Manages authentication and Role-Based Access Control (`role` enum).
+* **Books:** Stores the library catalogue. Tracks global inventory via the `copies` integer.
+* **Borrows:** A pivot/transactional table capturing the relationship between a `User` and a `Book`, specifically used for tracking successful borrow events and ensuring referential integrity via cascading deletes.
+
+---
+
+## Key Security Workflows
+
+### Transactional Borrowing Logic
+To prevent race conditions and inventory discrepancies, the borrowing process follows a strict atomic workflow:
+1. **Transaction Initialization:** Opens a secure database transaction.
+2. **Pessimistic Locking:** Executes `lockForUpdate()` on the target book record, preventing other processes from modifying the stock simultaneously.
+3. **Inventory Validation:** Checks if `copies > 0`.
+4. **Member-Bound Record Creation:** Inserts a borrowing record strictly tied to the `auth()->id()`.
+5. **Atomic Decrement:** Reduces the copy count directly on the database level.
+6. **Commit:** Finalizes changes only if all previous steps succeed.
 
 ---
 
@@ -54,7 +93,7 @@ Follow these steps to deploy the system locally:
    cp .env.example .env
    php artisan key:generate
    ```
-   *Note: Ensure your `.env` file reflects your local database connection details (e.g., MySQL).*
+   *Note: Ensure your `.env` file reflects your local database connection details (e.g., MySQL). **Crucially, make sure to create an empty database (e.g., `midterm_db`) in your MySQL manager (like phpMyAdmin) and update the `DB_DATABASE` variable in the `.env` file before running the next step.***
 
 5. **Run Database Migrations and Seeders:**
    ```bash
