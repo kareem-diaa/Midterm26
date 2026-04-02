@@ -1,59 +1,91 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Secure Online Library Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Project Abstract
+The Secure Online Library Management System is a robust, role-based web application built with Laravel and styled with Tailwind CSS. Developed for the "Web and Security Technologies" midterm exam, this system strictly adheres to the Model-View-Controller (MVC) architectural pattern. The core objective of the project is to provide a seamless borrowing engine while guaranteeing enterprise-grade protection against common web vulnerabilities. 
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Core Features
+* **Role-Based Access Control (RBAC):** Distinct interfaces and operational privileges for Admins, Librarians, and general Members.
+* **Dynamic Book Catalogue:** Full CRUD operations managed exclusively by authorized staff.
+* **Transactional Borrowing Engine:** Members can securely check out books from the catalogue, automatically updating active inventory.
+* **Account Dashboards:** Members have a dedicated dashboard to track their active borrowing status and history.
+* **Staff Member Management:** Administrative tools to monitor registered users and escalate privileges by creating new Librarian accounts.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Security Architecture
+Security is the foundational pillar of this application. Below is a matrix of the implemented vulnerability mitigations:
 
-## Learning Laravel
+* **Role-Based Access Control (RBAC):** Implemented a custom `CheckRole` middleware mapped strictly in `web.php` alongside UI-level `auth()->user()->hasRole()` Blade directives. Operations are securely gated at both the presentation and routing layers.
+* **Concurrency & Race Condition Prevention:** The borrowing engine utilizes pessimistic locking (`lockForUpdate()`) enclosed within `DB::transaction()`. This guarantees that high-volume concurrent checkout requests cannot compromise the system's integrity or force the inventory `copies` integer below zero.
+* **Insecure Direct Object Reference (IDOR) Mitigation:** All transactional records strictly bind to `auth()->user()`. A user cannot inject arbitrary IDs to borrow books on behalf of others, nor can they view the browsing history of other members. 
+* **Mass Assignment Prevention:** The `$guarded` property is deliberately avoided. Every Eloquent Model (`User`, `Book`, `Borrow`) strictly declares allowed input fields via the `$fillable` array.
+* **SQL Injection (SQLi) Prevention:** The system exclusively utilizes Laravel's Eloquent ORM and Query Builder, leveraging PHP data objects (PDO) and prepared statements.
+* **Cross-Site Scripting (XSS) Prevention:** The entire presentation layer relies on Blade templating. All dynamic database outputs are wrapped in `{{ }}` directives for automatic `htmlspecialchars()` sanitization.
+* **Cross-Site Request Forgery (CSRF) Protection:** Strict `@csrf` token enforcement on all state-changing HTML forms (`POST`, `PUT`, `DELETE`).
+* **Input Validation:** Backend execution relies entirely on the injection of strict `FormRequest` classes (`StoreBookRequest`, `UpdateBookRequest`, etc.).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Installation & Setup
 
-## Laravel Sponsors
+Follow these steps to deploy the system locally:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. **Clone the repository and enter the directory:**
+   ```bash
+   git clone https://github.com/kareem-diaa/Midterm26.git
+   cd Midterm26
+   ```
 
-### Premium Partners
+2. **Install PHP dependencies:**
+   ```bash
+   composer install
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+3. **Install and compile frontend assets:**
+   ```bash
+   npm install
+   npm run build
+   ```
 
-## Contributing
+4. **Configure your environment variables:**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   *Note: Ensure your `.env` file reflects your local database connection details (e.g., MySQL).*
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+5. **Run Database Migrations and Seeders:**
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
 
-## Code of Conduct
+6. **Serve the Application:**
+   ```bash
+   php artisan serve
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Default Credentials
+The database seeder automatically provisions the following test accounts. All passwords are set to `password`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Role | Email Address | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@library.com` | `password` |
+| **Librarian** | `librarian@library.com` | `password` |
+| **Member** | `member@library.com` | `password` |
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Author & Acknowledgements
+**Author:** Kareem Diaa
+**Professor:** Dr. Soliman Sarhan
+**Course:** CET232 Web and Security Technologies
+**Project:** Midterm 26 - Secure Online Library System
+
+This project was developed as part of a practical examination, focusing heavily on modern security engineering and secure coding patterns in the Laravel ecosystem.
+
+---
+*Designed & engineered for robust web security.*
