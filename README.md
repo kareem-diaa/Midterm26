@@ -119,10 +119,10 @@ The database seeder automatically provisions the following test accounts. All pa
 ---
 
 ## Author & Acknowledgements
-**Author:** Kareem Diaa
-**Professor:** Dr. Soliman Sarhan
-**Course:** CET232 Web and Security Technologies
-**Project:** Midterm 26 - Secure Online Library System
+* **Author:** Kareem Diaa
+* **Professor:** Dr. Soliman Sarhan
+* **Course:** CET232 Web and Security Technologies
+* **Project:** Midterm 26 - Secure Online Library System
 
 This project was developed as part of a practical examination, focusing heavily on modern security engineering and secure coding patterns in the Laravel ecosystem.
 
